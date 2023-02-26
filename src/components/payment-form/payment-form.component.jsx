@@ -26,23 +26,24 @@ const PaymentForm = () => {
     }
     console.log("Button pressed 2");
     setIsProcessingPayment(true);
-    const response = await fetch("/.netlify/functions/create-payment-intent", {
-      method: "post",
+    const response = await fetch("https://api.stripe.com/v1/payment_intents", {
+      body: "amount=200&currency=INR&automatic_payment_methods[enabled]=true&description=stripe_payment",
       headers: {
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.REACT_APP_STRIPE_SECRET_KEY}`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify({ amount: amount * 100 }),
-    }).then((res) => {
-      return res.json();
+      method: "POST",
     });
+    const stripeRes = await response.json();
+    console.log(stripeRes);
 
-    const clientSecret = response.paymentIntent.client_secret;
+    const clientSecret = stripeRes.client_secret;
 
     const paymentResult = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: elements.getElement(CardElement),
         billing_details: {
-          name: currentUser ? currentUser.displayName : "Yihua Zhang",
+          name: currentUser ? currentUser.displayName : "Mohan Prasath",
         },
       },
     });
